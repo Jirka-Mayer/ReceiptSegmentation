@@ -1,0 +1,88 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{hyperref}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+\lstset{
+  columns=flexible,
+  basicstyle={\small\ttfamily}
+}
+\usepackage[margin=3cm]{geometry}
+\setcounter{secnumdepth}{0}
+\begin{document}
+
+\section{Ořezávání účtenky ve fotografii}
+Specifikace ročníkového projektu\\
+25.2.2019 Jiří Mayer
+
+\paragraph{Cíl projektu\\}
+
+Vytvořit program, který dostane fotografii účtenky a vrátí vrcholy čtyřúhelníku,
+který co nejlépe ohraničuje účtenku. Oříznutí podle čtyřúhelníku by mělo
+účtenku připravit na OCR.
+
+\paragraph{Vlastnosti vstupu\\}
+
+Fotografie přímo z chytrého telefonu. Fotografie je ostrá a má
+dostatečné rozlišení. Je vyfocená na výšku. Před zpracováním
+se její šířka normalizuje na nějakou danou velikost.
+
+\paragraph{Očekávaná přesnost\\}
+
+Program by měl detekovat fotografie:
+
+\begin{itemize}
+    \itemsep -0.3em
+    \item s jednotnou texturou na pozadí (dřevo, kov, plast, látka)
+    \item pokud jsou na fotografii kromě účtenky jiné předměty nebo okraj stolu
+    \item pokud účtenku někdo přidržuje prsty nebo je zatížená nějakým předmětem
+    \item osvětlení by nemělo hrát roli (den, noc, svítilna na mobilu)
+    \item část účtenky je mimo okraj fotografie (malá část, hlavně nahoře nebo dole)
+\end{itemize}
+
+Situace, které nejspíš nebudou dobře detekovány:
+
+\begin{itemize}
+    \itemsep -0.3em
+    \item pozadí má podobnou texturu, jako účtenka (noviny, jiné účtenky, bílá plocha)
+    \item účtenka je moc zmačkaná a tak má špatný tvar nebo texturu
+    \item přes účtenku leží předměty tak, že její tvar je moc zvláštní nebo dokonce nesouvislý
+\end{itemize}
+
+Pokud účtenka není nalezena, program informuje uživatele.
+
+\paragraph{Použité technologie\\}
+
+Program bude realizovaný jako konzolová aplikace v Pythonu s použitím
+knihoven OpenCV a Numpy.
+
+\paragraph{Představa implementace\\}
+
+Začnu podobným postupem, jaký je uvedený v článku Donoser, Bischof,
+Wiltsche \url{https://www.researchgate.net/publication/224057460_Color_blob_segmentation_by_MSER_analysis} a zkusím místo
+explicitního vybírání počáteční oblasti poskytnout nějakou sadu
+dobrých distribucí pixelů. Nebo můžu kombinovat obojí. Použiju MSER na
+detekci blobu účtenky, případně jejího konvexního obalu.
+
+Pro detekci čtyřúhelníku z blobu nechci používat bounding rectangle,
+doufám že najdu lepší algoritmus, který se bude snažit trefit okraje účtenky
+a ne minimalizovat obsah oblasti.
+
+Jelikož mám problém v dost úzké doméně, tak si můžu dovolit předpokládat
+víc věcí (a tak například určit některé parametry na základě dat).
+
+\qquad
+
+Předpokládám, že konkrétní implementace se ještě v průběhu změní nebo upraví,
+protože teď nedokážu říct, zda bude zvolený postup splňovat všechny požadavky.
+
+\paragraph{Rozšíření\\}
+
+Pokud by program nebyl dostatečně rozsáhlý, můžu přidat buď další krok
+v OCR pipeline a sice binarizaci fotografie, nebo můžu implementovat
+jiný detektor a výsledek nějak průměrovat z obou (více) detektorů.
+
+\end{document}
