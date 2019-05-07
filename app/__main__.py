@@ -2,7 +2,6 @@ from app.dataset import Dataset
 from app.output import Output
 from app.segmenter import Segmenter
 from app.utils import Utils
-from app.segmenter import Segmenter
 from app.debug import Debug
 import numpy as np
 import cv2
@@ -14,26 +13,29 @@ segmenter = Segmenter()
 
 Output.clear()
 for item in dataset.items:
-    #if item.file != "001.jpg":
+    #if item.file != "008.jpg":
     #    continue
 
     print(item.file)
     Debug.show_labels(item)
 
-    # ----------------------
-
-    distribution_img_luv = cv2.cvtColor(item.distribution_img, cv2.COLOR_BGR2Luv)
-    distribution = Utils.calculate_distribution(distribution_img_luv)
+    # distances
 
     img = segmenter.normalize(item.img)
     img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
 
-    distances = segmenter.calculate_distance_map(img_luv, distribution)
-    distances_img = cv2.resize(distances, (img.shape[1], img.shape[0]))
-    distances_img = np.dstack([distances_img, distances_img, distances_img])
+    # via normal ROI
 
-    Output.write_image(item.file, distances_img)
+    distances = segmenter.calculate_distance_map(img_luv, item.distribution())
+    distances_img = segmenter.distance_map_to_img(distances, img_luv)
+    Output.write_image(item.file + "_1_roi.jpg", distances_img)
 
-    combined = img - distances_img
-    combined[img < distances_img] = 0
-    Output.write_image("combined_" + item.file, combined)
+    #combined = img - distances_img
+    #combined[img < distances_img] = 0
+    #Output.write_image(item.file + "_3_combined.jpg", combined)
+
+    # via small ROI
+
+    distances = segmenter.calculate_distance_map(img_luv, item.small_distribution())
+    distances_img = segmenter.distance_map_to_img(distances, img_luv)
+    Output.write_image(item.file + "_2_small_roi.jpg", distances_img)

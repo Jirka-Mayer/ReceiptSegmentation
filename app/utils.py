@@ -17,8 +17,13 @@ class Utils:
 
         # helper values
         avg_s = (s1 + s2) / 2
-        avg_s_inv = np.linalg.inv(avg_s)
         detmul = np.linalg.det(s1) * np.linalg.det(s2)
+        
+        try:
+            avg_s_inv = np.linalg.inv(avg_s)
+        except:
+            print("Singular matrix")
+            return 255
 
         # second part that tends to the manahalobis distance
         second_part = 0.125 * (m2 - m1).T.dot(avg_s_inv.dot((m2 - m1)))

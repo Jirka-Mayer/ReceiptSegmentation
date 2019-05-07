@@ -25,4 +25,13 @@ class Debug:
             3
         )
 
-        Output.write_image("labeled_" + dataset_item.file, img)
+        # blue inner region of interest
+        cv2.polylines(
+            img,
+            [dataset_item.small_roi_rect().to_polyline()],
+            True,
+            (255, 0, 0),
+            2
+        )
+
+        Output.write_image(dataset_item.file + "_0_labeled.jpg", img)

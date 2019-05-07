@@ -59,3 +59,8 @@ class Segmenter:
                 distances[y, x] = int(distance)
 
         return distances
+
+    def distance_map_to_img(self, distances, img):
+        """Resizes the distance map back up to fit the image size"""
+        distances_img = cv2.resize(distances, (img.shape[1], img.shape[0]))
+        return np.dstack([distances_img, distances_img, distances_img])
