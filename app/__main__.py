@@ -43,18 +43,21 @@ for item in dataset.items:
     regions, bounding_boxes = mser.detectRegions(distances)
     regions = [r * segmenter.stride for r in regions]
 
-    hulls = [cv2.convexHull(p.reshape(-1, 1, 2)) for p in regions]
-    cv2.polylines(img_mser, hulls, 2, (0, 0, 255))
+    if len(regions) == 0:
+        continue
+
+    region = regions[0]
+    hull = cv2.convexHull(region)[:,0,:]
+    
+    for p in region:
+        cv2.circle(img_mser, tuple(p), segmenter.stride // 2, (0, 0, 255), 2)
+    cv2.polylines(img_mser, [hull], True, (255, 0, 255), 5)
 
     Output.write_image(item.file + "_2_mser.jpg", img_mser)
-    
-    i = 0
-    for r in regions:
-        img_mser = np.copy(distances_img)
-        
-        #cv2.polylines(img_mser, [r], 2, (0, 0, 255))
-        for p in r:
-            cv2.circle(img_mser, tuple(p), segmenter.stride, (0, 0, 255), 2)
 
-        Output.write_image(item.file + "_2_mser" + str(i) + ".jpg", img_mser)
-        i += 1
+
+    outline_img = np.copy(img)
+    scale_factor = img.shape[1] / item.img.shape[1]
+    cv2.polylines(img, np.array([item.quad.to_polyline() * scale_factor], dtype=np.int32), True, (0, 0, 255), 5)
+    cv2.polylines(img, [hull], True, (255, 0, 255), 5)
+    Output.write_image(item.file + "_2_outline.jpg", img)
