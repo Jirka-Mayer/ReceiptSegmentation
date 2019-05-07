@@ -2,11 +2,12 @@ import numpy as np
 
 class Utils:
     @staticmethod
-    def calculate_distribution(pixels_luv):
+    def calculate_distribution(img_luv):
         """Calculates pixel distribution in the Luv space of a given image"""
+        pixels_luv = img_luv.reshape(-1, 3) # flatten into a row of pixels
         mean = pixels_luv.mean(axis=0) # 3D vector
-        variance = np.cov(pixels_luv, rowvar=False) # 3x3 matrix
-        return mean, variance # 3D gaussian
+        covariance = np.cov(pixels_luv, rowvar=False) # 3x3 matrix (symmetric btw.)
+        return mean, covariance # 3D gaussian
 
     @staticmethod
     def bhattacharyya_distance(a, b):
