@@ -10,22 +10,27 @@ class Utils:
         return mean, covariance # 3D gaussian
 
     @staticmethod
-    def bhattacharyya_distance(a, b):
+    def bhattacharyya_distance(d1, d2):
         """Calculates the bhattacharyya distance between two distributions"""
-        m1 = a[0]
-        m2 = b[0]
-        s1 = a[1]
-        s2 = b[1]
+        m1, s1 = d1
+        m2, s2 = d2
 
+        # helper values
         avg_s = (s1 + s2) / 2
-        avg_inv = np.linalg.inv(avg_s)
+        avg_s_inv = np.linalg.inv(avg_s)
+        detmul = np.linalg.det(s1) * np.linalg.det(s2)
 
-        # failsafe
-        if np.sqrt(np.linalg.det(s1) * np.linalg.det(s2)) == 0:
-            return 0
+        # second part that tends to the manahalobis distance
+        second_part = 0.125 * (m2 - m1).T.dot(avg_s_inv.dot((m2 - m1)))
 
-        beta = 0
-        beta += 0.5 * np.log(np.linalg.det(avg_s) / np.sqrt(np.linalg.det(s1) * np.linalg.det(s2)))
-        beta += 0.125 * (m2 - m1).T.dot(avg_inv.dot((m2 - m1)))
+        # HACK: helps increase receipt contrast
+        second_part *= 2
 
-        return beta
+        # variance is really small, use only the second part of the distance
+        if detmul <= 0:
+            return second_part
+
+        # first part conciders distribution variance
+        first_part = 0.5 * np.log(np.linalg.det(avg_s) / np.sqrt(detmul))
+
+        return first_part + second_part
