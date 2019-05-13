@@ -31,8 +31,3 @@ for item in dataset.items:
 
     #Debug.show_labels(item)
     Output.write_image(item.file + "_1_result.jpg", img)
-
-    # Need to solve:
-    # - polygon to quad
-    # - initial distribution without providing it explicitly
-    # - why it fails for 011.jpg and 012.jpg
