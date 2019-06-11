@@ -32,8 +32,6 @@ Program čte soubory z datasetu, na každém provede segmentaci a výsledky ulo�
 <img src="docs/example.jpg">
 
 
-## Ještě potřebuji vyřešit
+## Možné vylepšení
 
-- Převést výsledný mnohoúhelník na čtyřúhelník
 - Automaticky získat cílovou distribuci pixelů a ne ji vyčíst z datasetu
-- Proč selhávají příklady `011.jpg` a `012.jpg`, přestože mají kontrastní pozadí
