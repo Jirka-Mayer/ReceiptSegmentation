@@ -6,8 +6,11 @@ class Output:
     @staticmethod
     def clear():
         """Clears the output directory"""
-        shutil.rmtree("out")
-        os.makedirs("out")
+        try:
+            shutil.rmtree("out")
+            os.makedirs("out")
+        except FileNotFoundError:
+            pass
 
     @staticmethod
     def write_image(name, image):
