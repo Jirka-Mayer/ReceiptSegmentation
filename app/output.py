@@ -8,9 +8,10 @@ class Output:
         """Clears the output directory"""
         try:
             shutil.rmtree("out")
-            os.makedirs("out")
         except FileNotFoundError:
             pass
+        
+        os.makedirs("out")
 
     @staticmethod
     def write_image(name, image):
