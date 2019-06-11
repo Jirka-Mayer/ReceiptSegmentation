@@ -68,51 +68,11 @@ class Segmenter:
 
     def preprocess(self, img):
         """Does some preprocessing to increase accuracy"""
-
-        ####
-
-        """
-        img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        img_luv[:,:,0] = clahe.apply(img_luv[:,:,0])
-        img_clahe = cv2.cvtColor(img_luv, cv2.COLOR_Luv2BGR)
-        img_bilateral = cv2.bilateralFilter(img_clahe, 9, 75, 75)
-        """
-
-        ####
-
-        """
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)[:,:,0]
-        img_gray = np.dstack([img_gray, img_gray, img_gray])
-        """
-
-        ####
-
-        """
-        img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
-        
-        dark_area = 255 - img_luv[:,:,0]
-        dark_area = cv2.medianBlur(dark_area, 20 + 1)
-
-        alpha = 0.2
-        img_luv[:,:,1] = img_luv[:,:,1] * (1-alpha) + dark_area * alpha
-        img_pink = cv2.cvtColor(img_luv, cv2.COLOR_Luv2BGR)
-
-        #img_pink = np.dstack([dark_area, dark_area, dark_area])
-        """
-
-        ####
-
         img_median = cv2.medianBlur(img, 20 + 1)
-
-        # DEBUG
-        #self.img_preprocessed = img
-        #self.img_preprocessed = img_gray
-        #self.img_preprocessed = img_bilateral
-        
         alpha = 0.8
-
-        self.img_preprocessed = (img_median * alpha + img * (1 - alpha)).astype(np.uint8)
+        self.img_preprocessed = (
+            img_median * alpha + img * (1 - alpha)
+        ).astype(np.uint8)
 
         return self.img_preprocessed
 
@@ -164,10 +124,10 @@ class Segmenter:
     def get_receipt_pixels(self, distances):
         """Returns a list of points (pixel positions)
             that are the receipt or None"""
-        delta = 5
-        min_area = 60
-        max_area = 14400
-        max_variation = 0.05
+        delta = 8 # default was: 5
+        min_area = int(0.1 * distances.size) # default was: 60
+        max_area = int(0.9 * distances.size) # default was: 14400
+        max_variation = 0.1 # default was: 0.05
         mser = cv2.MSER_create(delta, min_area, max_area, max_variation)
 
         regions, bounding_boxes = mser.detectRegions(distances)
@@ -265,9 +225,6 @@ class Segmenter:
             self.quad.to_polyline()
         ], True, (255, 0, 255), 2)
         self.img_quad = img
-        """import matplotlib.pyplot as plt
-        plt.imshow(img)
-        plt.show()"""
         # DEBUG DRAW END
 
         return self.quad.scale(1 / self.scale_factor)

@@ -49,7 +49,7 @@ for item in dataset.items:
             segmenter.region
         )
     )
-    
+
     # poly to quad process
     Output.write_image(item.file + "_4_quad.jpg", segmenter.img_quad)
 
