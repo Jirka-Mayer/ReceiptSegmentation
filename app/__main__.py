@@ -15,19 +15,34 @@ Output.clear()
 for item in dataset.items:
     print(item.file)
     
+    #if item.file != "005.jpg":
+    #    continue
+    
+    #
     # run the segmentation algorithm
+    #
 
-    segmenter.segment(item.img, item.distribution())
+    quad = segmenter.segment(item.img, item.distribution())
 
+    #
     # draw the result
+    # 
+
+    # reference image
+    Output.write_image(item.file + "_0_norm.jpg", segmenter.img_normalized)
+
+    # distance map
+    Output.write_image(item.file + "_1_distances.jpg", segmenter.distances_img)
 
     if segmenter.region is None:
         print("No region found.")
         continue
+    
+    # poly to quad process
+    Output.write_image(item.file + "_2_quad.jpg", segmenter.img_quad)
 
-    hull = cv2.convexHull(segmenter.region)[:,0,:]
-    img = segmenter.draw_region_over(segmenter.img_normalized, segmenter.region)
-    cv2.polylines(img, [hull], True, (255, 0, 255), 5)
-
-    #Debug.show_labels(item)
-    Output.write_image(item.file + "_1_result.jpg", img)
+    # image with resulting quad only
+    Output.write_image(
+        item.file + "_3_result.jpg",
+        cv2.polylines(item.img, [quad.to_polyline()], True, (255, 0, 0), 10)
+    )

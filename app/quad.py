@@ -20,4 +20,12 @@ class Quad:
     def to_polyline(self):
         return np.array([
             self.a, self.b, self.c, self.d
-        ])
+        ]).astype(dtype=np.int32)
+
+    def scale(self, factor):
+        return Quad(
+            [self.a[0] * factor, self.a[1] * factor],
+            [self.b[0] * factor, self.b[1] * factor],
+            [self.c[0] * factor, self.c[1] * factor],
+            [self.d[0] * factor, self.d[1] * factor]
+        )
