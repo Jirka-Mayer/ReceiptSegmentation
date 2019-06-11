@@ -26,3 +26,9 @@ class Rect:
             self.b,
             [self.a[0], self.b[1]]
         ])
+
+    def scale(self, factor):
+        return Rect(
+            [self.a[0] * factor, self.a[1] * factor],
+            [self.b[0] * factor, self.b[1] * factor]
+        )

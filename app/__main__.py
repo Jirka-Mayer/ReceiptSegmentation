@@ -15,14 +15,14 @@ Output.clear()
 for item in dataset.items:
     print(item.file)
     
-    #if item.file != "005.jpg":
+    #if item.file != "008.jpg":
     #    continue
     
     #
     # run the segmentation algorithm
     #
 
-    quad = segmenter.segment(item.img, item.distribution())
+    quad = segmenter.segment(item.img, item.distribution_rect)
 
     #
     # draw the result
@@ -31,18 +31,30 @@ for item in dataset.items:
     # reference image
     Output.write_image(item.file + "_0_norm.jpg", segmenter.img_normalized)
 
-    # distance map
-    Output.write_image(item.file + "_1_distances.jpg", segmenter.distances_img)
+    # preprocessed image
+    Output.write_image(item.file + "_1_preprop.jpg", segmenter.img_preprocessed)
 
-    if segmenter.region is None:
+    # distance map
+    Output.write_image(item.file + "_2_distances.jpg", segmenter.distances_img)
+
+    if quad is None:
         print("No region found.")
         continue
+
+    # poly to quad process
+    Output.write_image(
+        item.file + "_3_region.jpg",
+        segmenter.draw_region_over(
+            segmenter.img_normalized,
+            segmenter.region
+        )
+    )
     
     # poly to quad process
-    Output.write_image(item.file + "_2_quad.jpg", segmenter.img_quad)
+    Output.write_image(item.file + "_4_quad.jpg", segmenter.img_quad)
 
     # image with resulting quad only
     Output.write_image(
-        item.file + "_3_result.jpg",
+        item.file + "_5_result.jpg",
         cv2.polylines(item.img, [quad.to_polyline()], True, (255, 0, 0), 10)
     )

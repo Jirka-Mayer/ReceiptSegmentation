@@ -9,6 +9,7 @@ class Segmenter:
     def __init__(self):
         # normalization
         self.normalized_width = 800
+        self.scale_factor = None # scale ratio (normalized / original)
         
         # distance map
         self.window_size = 10 # px
@@ -23,27 +24,42 @@ class Segmenter:
         self.img_quad = None
         self.quad = None # in normalized img coordinates
     
-    def segment(self, img, target_distribution):
+    def segment(self, img_original, target_distribution_rect):
         """Returns a quad or None if segmentation failed"""
-        self.img_original = img
+        
+        # DEBUG
+        self.img_original = img_original
 
-        img = self.normalize(img)
-        img = self.preprocess(img)
-        img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
+        # norm, preprocess, luv
+        img_normalized = self.normalize(img_original)
+        img_preprocessed = self.preprocess(img_normalized)
+        img_luv = cv2.cvtColor(img_preprocessed, cv2.COLOR_BGR2Luv)
+        
+        # target distribution
+        r = target_distribution_rect.scale(self.scale_factor).floor()
+        target_distribution = Utils.calculate_distribution(
+            img_luv[r.a[1]:r.b[1], r.a[0]:r.b[0]]
+        )
+
+        # distance map
         distances = self.calculate_distance_map(img_luv, target_distribution)
+
+        # region
         region = self.get_receipt_pixels(distances)
 
         if region is None:
             return None
 
+        # quad
         quad = self.extract_quad(region)
+
         return quad
 
     def normalize(self, img):
         """Returns the image with the normalized width"""
         target_width = self.normalized_width
-        scale_factor = target_width / img.shape[1]
-        target_height = int(img.shape[0] * scale_factor)
+        self.scale_factor = target_width / img.shape[1]
+        target_height = int(img.shape[0] * self.scale_factor)
         
         # DEBUG
         self.img_normalized = cv2.resize(img, (target_width, target_height))
@@ -53,15 +69,51 @@ class Segmenter:
     def preprocess(self, img):
         """Does some preprocessing to increase accuracy"""
 
-        """img = cv2.bilateralFilter(img, 9, 75, 75)
+        ####
 
-        alpha = 2.0
-        beta = 0.0
-        img = np.clip(alpha*img + beta, 0, 255).astype(dtype=np.uint8)"""
+        """
+        img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        img_luv[:,:,0] = clahe.apply(img_luv[:,:,0])
+        img_clahe = cv2.cvtColor(img_luv, cv2.COLOR_Luv2BGR)
+        img_bilateral = cv2.bilateralFilter(img_clahe, 9, 75, 75)
+        """
+
+        ####
+
+        """
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)[:,:,0]
+        img_gray = np.dstack([img_gray, img_gray, img_gray])
+        """
+
+        ####
+
+        """
+        img_luv = cv2.cvtColor(img, cv2.COLOR_BGR2Luv)
+        
+        dark_area = 255 - img_luv[:,:,0]
+        dark_area = cv2.medianBlur(dark_area, 20 + 1)
+
+        alpha = 0.2
+        img_luv[:,:,1] = img_luv[:,:,1] * (1-alpha) + dark_area * alpha
+        img_pink = cv2.cvtColor(img_luv, cv2.COLOR_Luv2BGR)
+
+        #img_pink = np.dstack([dark_area, dark_area, dark_area])
+        """
+
+        ####
+
+        img_median = cv2.medianBlur(img, 20 + 1)
 
         # DEBUG
-        self.img_preprocessed = img
+        #self.img_preprocessed = img
+        #self.img_preprocessed = img_gray
+        #self.img_preprocessed = img_bilateral
         
+        alpha = 0.8
+
+        self.img_preprocessed = (img_median * alpha + img * (1 - alpha)).astype(np.uint8)
+
         return self.img_preprocessed
 
     def calculate_distance_map(self, img_luv, target_distribution):
@@ -218,4 +270,4 @@ class Segmenter:
         plt.show()"""
         # DEBUG DRAW END
 
-        return self.quad.scale(self.img_original.shape[1] / self.normalized_width)
+        return self.quad.scale(1 / self.scale_factor)
